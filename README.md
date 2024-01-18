@@ -33,3 +33,6 @@ You can also send feedback to our dedicated support address cloud-beta@support.p
 - [Getting started guide](https://docs.myparallels.com/parallels-daas-administrators-guide/gettings-started)
 
 - [User guide](https://docs.myparallels.com/parallels-daas-users-guide/)
+
+## Copyright 
+Copyright © 2024 Parallels International GmbH. All rights reserved.
