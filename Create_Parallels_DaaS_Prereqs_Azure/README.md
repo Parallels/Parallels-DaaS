@@ -6,15 +6,11 @@ Parallels DaaS is a cloud-native, Desktop-as-a-Service (DaaS) solution that offe
 
 
 ## Installation
-> Step 1: [Placeholder](./1.runscript.md)
+> Step 1: [Running the script](./1.runscript.md)
 
-> Step 2: [Placeholder](./2.deployprovider.md)
-
-> Step 3: [Placeholder](./3.confirmpermissions.md)
+> Step 2: [Completing the Azure Subscription wizard](./2.completewizard.md)
 
 
-> [!IMPORTANT]  
-> Use powershell version 7 or above to execute this script
 
 ## Summary
 Below is a summary of the actions that the script performs.
