@@ -3,7 +3,7 @@
     Script to prepare a Microsoft Azure subscription for use with Parallels DaaS // Desktop-as-a-Service
 .DESCRIPTION 
     The script will ask for Azure Tenant ID, Subscription ID, App name, location, infrastructure resource group name, 
-    Virtual machines resource group name and Keyvault. It outputs the information needed to be passed in Parallels DaaS adninistrative portal during initial setup.
+    Virtual machines resource group name and Keyvault. It outputs the information needed to be passed in Parallels DaaS administrative portal during initial setup.
 .PARAMETER   
     None, all parameters are collected at runtime.
 .OUTPUTS 
