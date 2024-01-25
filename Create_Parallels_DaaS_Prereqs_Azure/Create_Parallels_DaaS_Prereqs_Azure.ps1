@@ -1,46 +1,29 @@
-<# 
-.SYNOPSIS 
+<#
+.SYNOPSIS
     Script to prepare a Microsoft Azure subscription for use with Parallels DaaS // Desktop-as-a-Service
-.DESCRIPTION 
-    The script will ask for Azure Tenant ID, Subscription ID, App name, location, infrastructure resource group name, 
+.DESCRIPTION
+    The script will ask for Azure Tenant ID, Subscription ID, App name, location, infrastructure resource group name,
     Virtual machines resource group name and Keyvault. It outputs the information needed to be passed in Parallels DaaS administrative portal during initial setup.
-.PARAMETER   
+.PARAMETER
     None, all parameters are collected at runtime.
-.OUTPUTS 
+.OUTPUTS
     - Azure Tenant ID
     - Azure Subscription ID
     - Application client ID
     - Client secrect value (stored in KeyVault)
     - Infrastructure resource group name
     - Virtual machines resource group name
-.NOTES 
+.NOTES
     Copyright © 2024 Parallels International GmbH. All rights reserved.
     Version: 1.0
-    Authors: Freek Berson, Sergii Shepelenko, John Zammit, Vasilis Koutsomanis 
-    Last update: 18/01/23
-    Changelog:  1.0 -   Initial published version
+    Authors: Freek Berson, Sergii Shepelenko, John Zammit, Vasilis Koutsomanis
+    Last update: 24/01/24
+    Changelog:  1.0 - Initial published version
 .LICENSE
     Released under the terms of MIT license (see LICENSE for details)
-#> 
+#>
 
 param([string]$localEnvJson = "")
-
-function IsSupportedOS {
-    if ([System.Environment]::Is64BitOperatingSystem) {
-        try {
-            $processorArchitecture = (Get-CimInstance -ClassName Win32_Processor).Architecture
-            if ($processorArchitecture -eq 5) {
-                Write-Host "ARM Based operating systems are not supported by this script." -ForegroundColor red
-                return $false
-            }
-        }
-        catch {
-            Write-Host "Failed to retrieve processor architecture: $_" -ForegroundColor red
-            return $true
-        }
-    }
-    return $true
-}
 
 function import-AzureModule {
     param (
@@ -78,14 +61,14 @@ function set-AzureTenant {
     $validSelection = $false
     while (-not $validSelection) {
         $selection = Read-Host ('>> Select a tenant by entering the corresponding number')
-        
+
         if ($selection -match '^\d+$') {
             $selection = [int]$selection
             if ($selection -ge 1 -and $selection -le $tenants.Count) {
                 $validSelection = $true
             }
         }
-        
+
         if (-not $validSelection) {
             Write-Host "Invalid input. Please enter a valid number between 1 and $($tenants.Count)" -ForegroundColor Red
         }
@@ -168,10 +151,10 @@ function set-AzureSubscription {
 
 function set-AzureLocation {
     $desiredLocations = @('westeurope')
-    
+
     # Retrieve Azure locations
     $locations = @(Get-AzLocation | Where-Object { $_.Providers -contains "Microsoft.DesktopVirtualization" -and $desiredLocations -contains $_.Location } | Select-Object -ExpandProperty Location | Sort-Object)
-    
+
     # Display the list of locations and prompt the user to select one
     $selectedLocation = $null
 
@@ -268,10 +251,10 @@ function new-AzureAppRegistration {
     $invalidChars = @('<', '>', ';', '&', '%')
 
     Write-Host `n"App registrations:" -ForegroundColor Yellow
-    
+
     while (-not $validAppName) {
         $appName = Read-Host '>> Provide the App Registration name'
-    
+
         if (-not [string]::IsNullOrWhiteSpace($appName) -and $appName.Length -gt 0) {
             if ($appName.Length -le 120) {
                 $containsInvalidChars = $false
@@ -281,7 +264,7 @@ function new-AzureAppRegistration {
                         break
                     }
                 }
-    
+
                 if (-not $containsInvalidChars) {
                     # Check if the app name already exists
                     $existingAppName = Get-AzADApplication | Where-Object { $_.DisplayName -eq $appName }
@@ -303,8 +286,8 @@ function new-AzureAppRegistration {
         else {
             Write-Host "The App Registration name cannot be empty or have a length of 0." -ForegroundColor Red
         }
-    }    
-    
+    }
+
     $ADServicePrincipal = Get-AzADServicePrincipal -DisplayName $appName
     if ($null -ne $ADServicePrincipal) {
         Write-Host "AD Service Principal with name '$appName' already exists. Please choose a different name."
@@ -481,10 +464,10 @@ function set-AdminConsent {
     )
 
     $Context = Get-AzContext
-    
+
     $token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate(
             $context.Account, $context.Environment, $TenantId, $null, "Never", $null, "74658136-14ec-4630-ad9b-26e160ff0fc6")
-    
+
     $headers = @{
         'Authorization'          = 'Bearer ' + $token.AccessToken
         'X-Requested-With'       = 'XMLHttpRequest'
@@ -499,14 +482,14 @@ function set-AdminConsent {
 function add-AzureAppRegistrationPermissions {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$appName, 
-        
+        [string]$appName,
+
         [Parameter(Mandatory = $false)]
-        [string]$localEnvJson  
+        [string]$localEnvJson
     )
     # Get the app registration
     $applicationID = (Get-AzADApplication -Filter "displayName eq '$appName'").AppId
-    
+
     $apiId = "00000003-0000-0000-c000-000000000000" # Microsoft Graph's API ID
 
     # Get the Microsoft Graph Service Principal
@@ -578,7 +561,7 @@ function add-AzureAppRegistrationPermissions {
                 "name": "groups"
             }
         ]
-    } 
+    }
 "@
 
     $authenticationJson = @"
@@ -604,15 +587,11 @@ function add-AzureAppRegistrationPermissions {
     $AppReg | Update-AzADApplication  -OptionalClaim $optionalClaimsJson
     # add logout url to application
     $authenticationObj = $authenticationJson | ConvertFrom-Json -AsHashtable
-    $AppReg | Update-AzADApplication  -Web $authenticationObj
+    $AppReg | Update-AzADApplication -Web $authenticationObj
+    $AppReg | Update-AzADApplication -GroupMembershipClaim "SecurityGroup"
 }
 
 Clear-Host
-
-if (-not (IsSupportedOS)) {
-    Read-Host "Press any key to continue..."
-    exit
-}
 
 # Check and import the required Azure PowerShell module
 try {
