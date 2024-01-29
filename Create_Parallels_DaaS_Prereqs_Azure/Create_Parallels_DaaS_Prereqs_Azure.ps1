@@ -408,14 +408,9 @@ function new-AzureKeyVaultWithSecret {
     # Prompt the user to enter the Key Vault name and validate it
     $validSelection = $false
     while (-not $validSelection) {
-        $KeyVaultName = Read-Host ">> Enter the name for the new Azure Key Vault to store secrets (Hit Enter to Skip)"
-        if ($KeyVaultName -match '^[A-Za-z][\w-]{1,22}[A-Za-z0-9]$' -or $KeyVaultName -eq '') {
+        $KeyVaultName = Read-Host ">> Enter the name for the new Azure Key Vault to store secrets"
+        if ($KeyVaultName -match '^[A-Za-z][\w-]{1,22}[A-Za-z0-9]$') {
             $validSelection = $true
-        }
-
-        if ($KeyVaultName -eq '') {
-            Write-Host "Keyvault configuration skipped"`n -ForegroundColor Green
-            return $null
         }
 
         if (-not $validSelection) {
@@ -566,9 +561,11 @@ function add-AzureAppRegistrationPermissions {
 
     $authenticationJson = @"
         {
-            "LogoutUrl": "https://cloud.parallels.com/logout",
             "RedirectUri": [
-                "https://cloud.parallels.com/discovery", "https://cloud.parallels.com/signin-oidc"
+                "https://cloud.parallels.com/discovery",
+                "https://cloud.parallels.com/signin-oidc",
+                "https://cloudadmin.parallels.com/login",
+                "https://cloudadmin.parallels.com/signin-oidc"
             ]
         }
 "@
