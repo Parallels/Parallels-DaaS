@@ -642,6 +642,17 @@ Catch {
     exit
 }
 
+# Register the required Azure resource providers
+try {
+    Register-AzResourceProvider -ProviderNamespace "Microsoft.Network"
+    Register-AzResourceProvider -ProviderNamespace "Microsoft.Compute"
+}
+Catch {
+    Write-Host "ERROR: trying to register required Azure resource providers"
+    Write-Host $_.Exception.Message
+    exit
+}
+
 # Create a custom role to allow adding and deleting role assinments
 try {
     create-CustomRole -SubscriptionId $selectedSubscriptionID -RoleName "Daas Role Assignment"
@@ -737,22 +748,22 @@ Catch {
     exit
 }
 
-# Add an Azure Keyvault and store the Client Secret in it
-try {
-    $selectedKeyVaultName = new-AzureKeyVaultWithSecret -ResourceGroupName $rgInfra.ResourceGroupName -Location $selectedAzureLocation -SecretValue $secret.SecretText -SecretName "daas-spn-client-secret" -SubsciptionID $selectedSubscriptionID
-}
-Catch {
-    Write-Host "ERROR: trying to create a new Azure KeyVault and adding the client secret"
-    Write-Host $_.Exception.Message
-    exit
-}
-
 # Grant admin consent to an the app registration
 try {
     set-AdminConsent -ApplicationId $app.AppId -TenantId $selectedTenantId
 }
 Catch {
     Write-Host "ERROR: trying to grant admin consent to an the app registration"
+    Write-Host $_.Exception.Message
+    exit
+}
+
+# Add an Azure Keyvault and store the Client Secret in it
+try {
+    $selectedKeyVaultName = new-AzureKeyVaultWithSecret -ResourceGroupName $rgInfra.ResourceGroupName -Location $selectedAzureLocation -SecretValue $secret.SecretText -SecretName "daas-spn-client-secret" -SubsciptionID $selectedSubscriptionID
+}
+Catch {
+    Write-Host "ERROR: trying to create a new Azure KeyVault and adding the client secret"
     Write-Host $_.Exception.Message
     exit
 }
