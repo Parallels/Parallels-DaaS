@@ -16,12 +16,18 @@
 .NOTES
     Copyright © 2024 Parallels International GmbH. All rights reserved.
     Version: 1.0
-    Authors: Freek Berson, Sergii Shepelenko, John Zammit, Vasilis Koutsomanis
+    Authors: Freek Berson, Sergii Shepelenko, John Zammit, Vasilis Koutsomanis, Mark Plettenberg
     Last update: 24/01/24
     Changelog:  1.0 - Initial published version
 .LICENSE
     Released under the terms of MIT license (see LICENSE for details)
 #>
+
+# Check the PowerShell version
+if ($PSVersionTable.PSVersion -lt [Version]"7.3") {
+    Write-host "Please execute with PowerShell version 7.3 or above" -ForegroundColor Red
+    exit
+}
 
 param([string]$localEnvJson = "")
 
