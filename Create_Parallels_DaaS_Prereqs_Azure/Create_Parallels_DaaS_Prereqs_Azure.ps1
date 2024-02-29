@@ -383,7 +383,8 @@ function new-AzureResourceGroup {
     if ($existingResourceGroup) {
         # Return the existing resource group
         return $existingResourceGroup
-    } else {
+    }
+    else {
         # Create the resource group since it doesn't exist
         $resourceGroup = New-AzResourceGroup -Name $resourceGroupName -Location $resourceGroupLocation -Force
         return $resourceGroup
@@ -467,7 +468,7 @@ function set-AdminConsent {
     $Context = Get-AzContext
 
     $token = [Microsoft.Azure.Commands.Common.Authentication.AzureSession]::Instance.AuthenticationFactory.Authenticate(
-            $context.Account, $context.Environment, $TenantId, $null, "Never", $null, "74658136-14ec-4630-ad9b-26e160ff0fc6")
+        $context.Account, $context.Environment, $TenantId, $null, "Never", $null, "74658136-14ec-4630-ad9b-26e160ff0fc6")
 
     $headers = @{
         'Authorization'          = 'Bearer ' + $token.AccessToken
@@ -498,14 +499,9 @@ function add-AzureAppRegistrationPermissions {
 
     # Define the desired permissions
     $desiredApplicationPermissions = @(
-    "Group.ReadWrite.All",
-    "GroupMember.ReadWrite.All",
-    "User.Read.All",
-    "User.Export.All",
-    "User.Invite.All",
-    "User.ManageIdentities.All",
-    "User.ReadWrite.All",
-    "Domain.Read.All"
+        "User.Read.All",
+        "Domain.Read.All",
+        "GroupMember.Read.All"
     )
 
     # Iterate over the desired permissions and add them to your application
@@ -514,18 +510,17 @@ function add-AzureAppRegistrationPermissions {
         if ($permissionId) {
             Add-AzADAppPermission -ApplicationId $applicationID -ApiId $apiId -PermissionId $permissionId -Type Role
             Write-Host "Added permission: $permissionValue with ID: $permissionId"
-        } else {
+        }
+        else {
             Write-Host "Failed to find application permission: $permissionValue"
         }
     }
 
     $desiredDelegatedPermissions = @(
-    "User.Read",
-    "email",
-    "openid",
-    "profile",
-    "Domain.Read.All",
-    "Group.Read.All"
+        "email",
+        "openid",
+        "profile",
+        "Group.Read.All"
     )
 
     # Iterate over the desired delegated permissions and add them to your application
@@ -534,7 +529,8 @@ function add-AzureAppRegistrationPermissions {
         if ($permissionId) {
             Add-AzADAppPermission -ApplicationId $applicationID -ApiId $apiId -PermissionId $permissionId -Type Scope
             Write-Host "Added permission: $permissionValue with ID: $permissionId"
-        } else {
+        }
+        else {
             Write-Host "Failed to find delegated permission: $permissionValue"
         }
     }
