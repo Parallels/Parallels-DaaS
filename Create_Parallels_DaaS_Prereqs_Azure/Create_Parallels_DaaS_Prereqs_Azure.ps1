@@ -156,10 +156,9 @@ function set-AzureSubscription {
 }
 
 function set-AzureLocation {
-    $desiredLocations = @('westeurope')
 
     # Retrieve Azure locations
-    $locations = @(Get-AzLocation | Where-Object { $_.Providers -contains "Microsoft.DesktopVirtualization" -and $desiredLocations -contains $_.Location } | Select-Object -ExpandProperty Location | Sort-Object)
+    $locations = @(Get-AzLocation | Where-Object { $_.Providers -contains "Microsoft.Network" -and $_.Providers -contains "Microsoft.Compute" } | Select-Object -ExpandProperty Location | Sort-Object)
 
     # Display the list of locations and prompt the user to select one
     $selectedLocation = $null
