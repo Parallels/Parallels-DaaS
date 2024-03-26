@@ -17,7 +17,7 @@
     Copyright © 2024 Parallels International GmbH. All rights reserved.
     Version: 1.0
     Authors: Freek Berson, Sergii Shepelenko, John Zammit, Vasilis Koutsomanis, Mark Plettenberg
-    Last update: 24/01/24
+    Last update: 20/03/24
     Changelog:  1.0 - Initial published version
 .LICENSE
     Released under the terms of MIT license (see LICENSE for details)
