@@ -545,6 +545,9 @@ function add-AzureAppRegistrationPermissions {
             },
             {
                 "name": "groups"
+            },
+            {
+                "name": "login_hint"
             }
         ],
         "accessToken": [
