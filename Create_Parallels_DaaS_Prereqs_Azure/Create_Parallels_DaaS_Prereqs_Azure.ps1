@@ -500,7 +500,8 @@ function add-AzureAppRegistrationPermissions {
     $desiredApplicationPermissions = @(
         "User.Read.All",
         "Domain.Read.All",
-        "GroupMember.Read.All"
+        "GroupMember.Read.All",
+        "Application.Read.All"
     )
 
     # Iterate over the desired permissions and add them to your application
