@@ -35,4 +35,4 @@ You can also send feedback to our dedicated support address cloud-beta@support.p
 - [User guide](https://docs.myparallels.com/parallels-daas-users-guide/)
 
 ## Copyright 
-Copyright © 2024 Parallels International GmbH. All rights reserved.
+Copyright © 2025 Parallels International GmbH. All rights reserved.
