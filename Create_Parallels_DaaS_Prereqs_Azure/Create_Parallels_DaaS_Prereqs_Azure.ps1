@@ -567,10 +567,9 @@ function add-AzureAppRegistrationPermissions {
     $authenticationJson = @"
         {
             "RedirectUri": [
-                "https://cloud.parallels.com/discovery",
-                "https://cloud.parallels.com/signin-oidc",
-                "https://cloudadmin.parallels.com/login",
-                "https://cloudadmin.parallels.com/signin-oidc"
+                "https://daas.parallels.com/discovery",
+                "https://daas.parallels.com/signin-oidc",
+                "https://daas.parallels.com/admin/login"
             ]
         }
 "@
