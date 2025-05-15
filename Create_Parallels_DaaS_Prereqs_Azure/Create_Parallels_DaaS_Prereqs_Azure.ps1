@@ -226,10 +226,11 @@ function create-CustomRole {
         $role = Get-AzRoleDefinition "Virtual Machine Contributor"
         $role.Id = $null
         $role.Name = $RoleName
-        $role.Description = "Allows to add and delete role assignments"
+        $role.Description = "Custom role for managing access and operational settings in DaaS environments"
         $role.Actions.Clear()
         $role.Actions.Add("Microsoft.Authorization/roleAssignments/write")
         $role.Actions.Add("Microsoft.Authorization/roleAssignments/delete")
+        $role.Actions.Add("Microsoft.Quota/quotas/read")
         $role.AssignableScopes.clear()
         $role.AssignableScopes.Add("/subscriptions/$SubscriptionId")
         New-AzRoleDefinition -Role $role | Out-Null
@@ -650,6 +651,7 @@ Catch {
 try {
     Register-AzResourceProvider -ProviderNamespace "Microsoft.Network"
     Register-AzResourceProvider -ProviderNamespace "Microsoft.Compute"
+    Register-AzResourceProvider -ProviderNamespace "Microsoft.Quota"
 }
 Catch {
     Write-Host "ERROR: trying to register required Azure resource providers"
@@ -659,7 +661,7 @@ Catch {
 
 # Create a custom role to allow adding and deleting role assinments
 try {
-    create-CustomRole -SubscriptionId $selectedSubscriptionID -RoleName "Daas Role Assignment"
+    create-CustomRole -SubscriptionId $selectedSubscriptionID -RoleName "Daas Role"
 }
 Catch {
     Write-Host "ERROR: creating custom role to allow adding and deleting role assinments"
@@ -744,7 +746,7 @@ Catch {
 
 # Add DaaS Role Assignment Role permission on subscription to the app registration
 try {
-    add-AppRegistrationToCustomRole -objectId $app.Id -SubscriptionId $selectedSubscriptionID -RoleName "Daas Role Assignment"
+    add-AppRegistrationToCustomRole -objectId $app.Id -SubscriptionId $selectedSubscriptionID -RoleName "Daas Role"
 }
 Catch {
     Write-Host "ERROR: trying to set User Access Administration role"
