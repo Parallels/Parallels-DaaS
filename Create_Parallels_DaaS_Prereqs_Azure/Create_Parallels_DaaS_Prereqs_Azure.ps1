@@ -226,7 +226,7 @@ function create-CustomRole {
         $role = Get-AzRoleDefinition "Virtual Machine Contributor"
         $role.Id = $null
         $role.Name = $RoleName
-        $role.Description = "Custom role for managing access and operational settings in DaaS environments"
+        $role.Description = "Custom role for managing access and operational settings in DaaS environment"
         $role.Actions.Clear()
         $role.Actions.Add("Microsoft.Authorization/roleAssignments/write")
         $role.Actions.Add("Microsoft.Authorization/roleAssignments/delete")
@@ -661,7 +661,7 @@ Catch {
 
 # Create a custom role to allow adding and deleting role assinments
 try {
-    create-CustomRole -SubscriptionId $selectedSubscriptionID -RoleName "Daas Role"
+    create-CustomRole -SubscriptionId $selectedSubscriptionID -RoleName "Parallels Daas Role"
 }
 Catch {
     Write-Host "ERROR: creating custom role to allow adding and deleting role assinments"
@@ -746,7 +746,7 @@ Catch {
 
 # Add DaaS Role Assignment Role permission on subscription to the app registration
 try {
-    add-AppRegistrationToCustomRole -objectId $app.Id -SubscriptionId $selectedSubscriptionID -RoleName "Daas Role"
+    add-AppRegistrationToCustomRole -objectId $app.Id -SubscriptionId $selectedSubscriptionID -RoleName "Parallels Daas Role"
 }
 Catch {
     Write-Host "ERROR: trying to set User Access Administration role"
