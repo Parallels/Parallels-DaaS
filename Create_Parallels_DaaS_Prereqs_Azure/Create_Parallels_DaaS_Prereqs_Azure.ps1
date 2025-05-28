@@ -652,6 +652,7 @@ try {
     Register-AzResourceProvider -ProviderNamespace "Microsoft.Network"
     Register-AzResourceProvider -ProviderNamespace "Microsoft.Compute"
     Register-AzResourceProvider -ProviderNamespace "Microsoft.Quota"
+    Register-AzResourceProvider -ProviderNamespace "Microsoft.DesktopVirtualization"
 }
 Catch {
     Write-Host "ERROR: trying to register required Azure resource providers"
