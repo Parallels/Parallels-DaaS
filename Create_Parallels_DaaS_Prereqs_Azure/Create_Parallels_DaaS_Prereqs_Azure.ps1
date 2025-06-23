@@ -593,6 +593,61 @@ function add-AzureAppRegistrationPermissions {
     $AppReg | Update-AzADApplication -GroupMembershipClaim "SecurityGroup"
 }
 
+function Enable-TenantLevelAVDSSO {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$TenantId
+    )
+
+    # Connect to Microsoft Graph with required scopes
+    try {
+        Connect-MgGraph -Scopes "Application.Read.All", "Application-RemoteDesktopConfig.ReadWrite.All" -TenantId $TenantId -NoWelcome
+    }
+    catch {
+        Write-Host "ERROR: Unable to connect to Microsoft Graph with required scopes." -ForegroundColor Red
+        Write-Host $_.Exception.Message
+        return
+    }
+
+    # Get service principal IDs for AVD SSO services
+    try {
+        $MSRDAppId = "a4a365df-50f1-4397-bc59-1a1564b8bb9c"
+        $WCLAppId  = "270efc09-cd0d-444b-a71f-39af4910ec45"
+
+        $MSRDspId = (Get-MgServicePrincipal -Filter "AppId eq '$MSRDAppId'").Id
+        $WCLspId  = (Get-MgServicePrincipal -Filter "AppId eq '$WCLAppId'").Id
+    }
+    catch {
+        Write-Host "ERROR: Failed to retrieve service principal IDs." -ForegroundColor Red
+        Write-Host $_.Exception.Message
+        return
+    }
+
+    # Check and enable SSO only if needed
+    try {
+        $msrdStatus = (Get-MgServicePrincipalRemoteDesktopSecurityConfiguration -ServicePrincipalId $MSRDspId).IsRemoteDesktopProtocolEnabled
+        $wclStatus  = (Get-MgServicePrincipalRemoteDesktopSecurityConfiguration -ServicePrincipalId $WCLspId).IsRemoteDesktopProtocolEnabled
+
+        if (-not $msrdStatus) {
+            Update-MgServicePrincipalRemoteDesktopSecurityConfiguration -ServicePrincipalId $MSRDspId -IsRemoteDesktopProtocolEnabled
+            Write-Host "Enabled RDP protocol on Microsoft Remote Desktop SPN." -ForegroundColor Green
+        } else {
+            Write-Host "RDP protocol already enabled on Microsoft Remote Desktop SPN." -ForegroundColor Yellow
+        }
+
+        if ($wclStatus -ne $true) {
+            Update-MgServicePrincipalRemoteDesktopSecurityConfiguration -ServicePrincipalId $WCLspId -IsRemoteDesktopProtocolEnabled
+            Write-Host "Enabled RDP protocol on Windows Cloud Login SPN." -ForegroundColor Green
+        } else {
+            Write-Host "RDP protocol already enabled on Windows Cloud Login SPN." -ForegroundColor Yellow
+        }
+    }
+    catch {
+        Write-Host "ERROR: Failed to check or configure Remote Desktop SSO settings." -ForegroundColor Red
+        Write-Host $_.Exception.Message
+    }
+}
+
 Clear-Host
 
 # Check and import the required Azure PowerShell module
@@ -600,6 +655,8 @@ try {
     import-AzureModule "Az.Accounts"
     import-AzureModule "Az.Resources"
     import-AzureModule "Az.keyVault"
+    import-AzureModule "Microsoft.Graph.Authentication"
+    import-AzureModule "Microsoft.Graph.Applications"
 }
 Catch {
     Write-Host "ERROR: trying to import required modules import Az.Accounts, Az.Resources, and Az.keyVault"
@@ -649,10 +706,10 @@ Catch {
 
 # Register the required Azure resource providers
 try {
-    Register-AzResourceProvider -ProviderNamespace "Microsoft.Network"
-    Register-AzResourceProvider -ProviderNamespace "Microsoft.Compute"
-    Register-AzResourceProvider -ProviderNamespace "Microsoft.Quota"
-    Register-AzResourceProvider -ProviderNamespace "Microsoft.DesktopVirtualization"
+    Register-AzResourceProvider -ProviderNamespace "Microsoft.Network"  | Out-Null
+    Register-AzResourceProvider -ProviderNamespace "Microsoft.Compute"  | Out-Null
+    Register-AzResourceProvider -ProviderNamespace "Microsoft.Quota"  | Out-Null
+    Register-AzResourceProvider -ProviderNamespace "Microsoft.DesktopVirtualization"  | Out-Null
 }
 Catch {
     Write-Host "ERROR: trying to register required Azure resource providers"
@@ -775,6 +832,14 @@ Catch {
     exit
 }
 
+# Enable Microsoft Entra authentication for RDP (tenant level)
+$avdSsoSuccess = $true
+try {
+    Enable-TenantLevelAVDSSO -TenantId $selectedTenantId
+}
+catch {
+    $avdSsoSuccess = $false
+}
 #Create summary information
 Write-Host "`n* App registration created, permissions configured and secret created." -ForegroundColor Cyan
 Write-host "* Below is the information that has to be provided via Parallels DaaS portal!" -ForegroundColor Cyan
@@ -784,3 +849,6 @@ Write-Host "3. Application(client) ID: "$app.AppId
 Write-Host "4. Client secret value stored in KV "$selectedKeyVaultName
 Write-Host "5. Infrastructure resource group name: "$rgInfra.ResourceGroupName
 Write-Host "6. VMs resource group name: "$rgVms.ResourceGroupName
+if (-not $avdSsoSuccess) {
+    Write-Host "7. AVD SSO configuration failed. Please contact Parallels support." -ForegroundColor Red
+}
